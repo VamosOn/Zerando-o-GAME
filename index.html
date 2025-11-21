@@ -104,12 +104,24 @@
   .feito{
     background:var(--done)!important;
   }
+
+  /* NOVO: total arrecadado */
+  #totalFinal{
+    font-size:18px;
+    font-weight:700;
+    text-align:right;
+    margin-bottom:15px;
+    color:#333;
+  }
 </style>
 </head>
 
 <body>
 
 <h2>META É TUDO 📊💰⌛</h2>
+
+<!-- NOVO: total à direita -->
+<div id="totalFinal">Total arrecadado: R$ 0,00</div>
 
 <div class="top-bar">
   <label>Valor Inicial
@@ -141,7 +153,7 @@ function gerarID(q){ return "quadro_" + q; }
 
 function salvarLS(){
   const feitos = {};
-  
+
   document.querySelectorAll(".quadro").forEach((q,i)=>{
     const id = gerarID(i+1);
     feitos[id] = q.classList.contains("feito");
@@ -151,7 +163,8 @@ function salvarLS(){
     valorInicial: document.getElementById("valorInicial").value,
     oddGlobal: document.getElementById("oddGlobal").value,
     qtdQuadros: document.getElementById("qtdQuadros").value,
-    feitos
+    feitos,
+    totalFinal: document.getElementById("totalFinal").innerText
   };
 
   localStorage.setItem("tabelaMeta", JSON.stringify(data));
@@ -165,9 +178,8 @@ function carregarLS(){
   document.getElementById("oddGlobal").value = data.oddGlobal;
   document.getElementById("qtdQuadros").value = data.qtdQuadros;
 
-  gerar(false); // gerar sem salvar
+  gerar(false);
 
-  // restaurar quadros feitos
   const quadros = document.querySelectorAll(".quadro");
   quadros.forEach((q,i)=>{
     const id = gerarID(i+1);
@@ -175,6 +187,9 @@ function carregarLS(){
       q.classList.add("feito");
     }
   });
+
+  if(data.totalFinal)
+    document.getElementById("totalFinal").innerText = data.totalFinal;
 }
 
 // ---------------- GERAR TABELA -------------------------
@@ -192,6 +207,8 @@ function gerar(deveSalvar=true){
 
     let entradaInicial = inicio;
 
+    let totalArrecadado = 0; // NOVO
+
     for(let q=1; q<=quadros; q++){
         let e1 = entradaInicial;
         let r1 = e1 * odd;
@@ -201,6 +218,8 @@ function gerar(deveSalvar=true){
         let r3 = e3 * odd;
 
         entradaInicial = r3 - e1;
+
+        totalArrecadado += e1; // NOVO (somando primeira entrada)
 
         conteudo.innerHTML += `
         <div class='quadro' data-id="${gerarID(q)}">
@@ -219,6 +238,10 @@ function gerar(deveSalvar=true){
 
         if(entradaInicial <= 0) break;
     }
+
+    // atualizar topo
+    document.getElementById("totalFinal").innerText =
+        "Total🤑💲: R$ " + totalArrecadado.toFixed(2);
 
     if(deveSalvar) salvarLS();
 }
